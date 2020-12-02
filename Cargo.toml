@@ -7,3 +7,13 @@ edition = "2018"
 [dependencies]
 lazy_static = "1.4.0"
 regex = "1"
+
+[[bin]]
+name = "day01"
+path = "src/day01.rs"
+test = true
+
+[[bin]]
+name = "day02"
+path = "src/day02.rs"
+test = true

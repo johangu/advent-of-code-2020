@@ -1,65 +1,65 @@
+use advent_of_code::fmt_dur;
 use lazy_static::lazy_static;
 use regex::Regex;
+use std::env;
+use std::fs;
+use std::time::Instant;
 
-fn is_valid_password1(min: usize, max: usize, character: char, pwd: &str) -> bool {
-    let n = pwd.matches(character).count();
-    return n >= min && n <= max;
+fn is_valid_password(min: usize, max: usize, c: char, pwd: &str) -> bool {
+    let n = pwd.matches(c).count();
+    n >= min && n <= max
 }
 
-fn is_valid_password2(pos1: usize, pos2: usize, character: char, pwd: &str) -> bool {
+fn is_valid_toboggan_password(pos1: usize, pos2: usize, c: char, pwd: &str) -> bool {
     let char1: char = pwd.chars().nth(pos1 - 1).unwrap();
     let char2: char = pwd.chars().nth(pos2 - 1).unwrap();
 
-    return (char1 == character) ^ (char2 == character);
+    (char1 == c) ^ (char2 == c)
 }
 
-pub fn part1(input: String) {
+fn main() {
     lazy_static! {
         static ref RE: Regex =
-            Regex::new(r"(?P<min>\d+)-(?P<max>\d+) (?P<character>[A-Za-z]): (?P<pwd>.*)").unwrap();
+            Regex::new(r"(?P<pos1>\d+)-(?P<pos2>\d+) (?P<c>[A-Za-z]): (?P<pwd>.*)").unwrap();
     }
+    // Read input file
+    let cwd = env::current_dir().unwrap();
+    let filename = cwd.join("inputs/day02.txt");
+    println!("Reading {}", filename.display());
+    let input = fs::read_to_string(filename).expect("Error while reading");
 
     let mut valid_passwords = Vec::new();
-    for line in input.lines() {
-        let caps = RE.captures(line).unwrap();
-        let min = caps["min"].parse::<usize>().unwrap();
-        let max = caps["max"].parse::<usize>().unwrap();
-        let character = caps["character"].parse::<char>().unwrap();
-        let pwd = caps["pwd"].parse::<String>().unwrap();
+    let mut valid_toboggan_passwords = Vec::new();
 
-        if is_valid_password1(min, max, character, &pwd) {
-            valid_passwords.push(pwd);
-        }
-    }
+    println!("Checking passwords");
+    let start = Instant::now();
 
-    println!("Number of valid passwords: {}", valid_passwords.len());
-}
-
-pub fn part2(input: String) {
-    lazy_static! {
-        static ref RE: Regex =
-            Regex::new(r"(?P<pos1>\d+)-(?P<pos2>\d+) (?P<character>[A-Za-z]): (?P<pwd>.*)")
-                .unwrap();
-    }
-
-    let mut valid_passwords = Vec::new();
     for line in input.lines() {
         let caps = RE.captures(line).unwrap();
         let min = caps["pos1"].parse::<usize>().unwrap();
         let max = caps["pos2"].parse::<usize>().unwrap();
-        let character = caps["character"].parse::<char>().unwrap();
+        let c = caps["c"].parse::<char>().unwrap();
         let pwd = caps["pwd"].parse::<String>().unwrap();
 
-        if is_valid_password2(min, max, character, &pwd) {
-            valid_passwords.push(pwd);
+        if is_valid_password(min, max, c, &pwd) {
+            valid_passwords.push(pwd.clone());
+        }
+
+        if is_valid_toboggan_password(min, max, c, &pwd) {
+            valid_toboggan_passwords.push(pwd.clone());
         }
     }
+    let dur = start.elapsed();
 
     println!("Number of valid passwords: {}", valid_passwords.len());
+    println!(
+        "Number of valid toboggan passwords: {}",
+        valid_toboggan_passwords.len()
+    );
+    println!("Took {}", fmt_dur(dur));
 }
 
 #[cfg(test)]
-
 mod tests {
     use super::*;
 
@@ -67,59 +67,59 @@ mod tests {
     fn test_part1_pwd1() {
         let min = 1;
         let max = 3;
-        let character: char = 'a';
+        let c: char = 'a';
         let pwd = "abcde";
 
-        assert_eq!(is_valid_password1(min, max, character, pwd), true);
+        assert_eq!(is_valid_password(min, max, c, pwd), true);
     }
 
     #[test]
     fn test_part1_pwd2() {
         let min = 1;
         let max = 3;
-        let character: char = 'b';
+        let c: char = 'b';
         let pwd = "cdefg";
 
-        assert_eq!(is_valid_password1(min, max, character, pwd), false);
+        assert_eq!(is_valid_password(min, max, c, pwd), false);
     }
 
     #[test]
     fn test_part1_pwd3() {
         let min = 2;
         let max = 9;
-        let character: char = 'c';
+        let c: char = 'c';
         let pwd = "ccccccccc";
 
-        assert_eq!(is_valid_password1(min, max, character, pwd), true);
+        assert_eq!(is_valid_password(min, max, c, pwd), true);
     }
 
     #[test]
     fn test_part2_pwd1() {
         let min = 1;
         let max = 3;
-        let character: char = 'a';
+        let c: char = 'a';
         let pwd = "abcde";
 
-        assert_eq!(is_valid_password2(min, max, character, pwd), true);
+        assert_eq!(is_valid_toboggan_password(min, max, c, pwd), true);
     }
 
     #[test]
     fn test_part2_pwd2() {
         let min = 1;
         let max = 3;
-        let character: char = 'b';
+        let c: char = 'b';
         let pwd = "cdefg";
 
-        assert_eq!(is_valid_password2(min, max, character, pwd), false);
+        assert_eq!(is_valid_toboggan_password(min, max, c, pwd), false);
     }
 
     #[test]
     fn test_part2_pwd3() {
         let min = 2;
         let max = 9;
-        let character: char = 'c';
+        let c: char = 'c';
         let pwd = "ccccccccc";
 
-        assert_eq!(is_valid_password2(min, max, character, pwd), false);
+        assert_eq!(is_valid_toboggan_password(min, max, c, pwd), false);
     }
 }
