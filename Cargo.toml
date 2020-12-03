@@ -17,3 +17,8 @@ test = true
 name = "day02"
 path = "src/day02.rs"
 test = true
+
+[[bin]]
+name = "day03"
+path = "src/day03.rs"
+test = true
